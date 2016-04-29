@@ -56,7 +56,7 @@ def destfile(filename):
         return filename
 
 def check_file(filename, md5):
-    if(os.path.isfile(filename)!=True):
+    if not os.path.isfile(filename):
         return False
     with open(filename, 'rb') as f:
         m = hashlib.md5()
@@ -72,11 +72,11 @@ def download_new_files():
             res = res.split()[0].split(',')
             FILENAME = res[0]
             MD5 = res[1]
-            if(check_file("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), MD5)!=True):
+            if not check_file("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), MD5):
                 print "===> Downloading new version of file {0}.".format(FILENAME)
                 url = download_url(FILENAME, MD5)
                 file_content = requests.get(url).content
-                if(os.path.dirname(FILENAME)!=''):
+                if(os.path.dirname(FILENAME)!='' and not os.path.isdir("{0}/{1}".format(TMP_DOWNLOAD, os.path.dirname(FILENAME)))):
                     os.mkdir("{0}/{1}".format(TMP_DOWNLOAD, os.path.dirname(FILENAME)))
                 with open("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), 'wb') as f:
                     f.write(file_content)
