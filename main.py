@@ -5,6 +5,7 @@ import os
 import hashlib
 import requests
 import sqlite3
+import UnicodeWriter
 
 VERSION=os.getenv('VERSION') or 10014950
 
@@ -109,12 +110,13 @@ def extract():
 
 def acb_extract(root, name, dest, tmp):
     print "[-] unacb {0}".format(name)
-    acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), dest)
+    acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), tmp)
     os.system(acb_comm)
-    hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(dest,name.replace('acb','hca'))
+    hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(tmp,name.replace('acb','hca'))
     os.system(hca_comm)
-    avconv_comm = "avconv -i {0} {1}".format(os.path.join(dest,name.replace('acb','wav'), os.path.join(dest,name.replace('acb','mp3'))
+    avconv_comm = "avconv -i {0} {1}".format(os.path.join(tmp,name.replace('acb','wav')), os.path.join(dest,name.replace('acb','mp3')))
     os.system(avconv_comm)
+    os.remove(os.path.join(tmp,name.replace('acb','wav'))
 
 def sql_extract(root, name, dest, tmp):
     print "[-] unpacking sql {0}".format(name)
@@ -129,6 +131,7 @@ def sql_extract(root, name, dest, tmp):
         cur.execute("select * from ?", tablename)
         writer = UnicodeWriter(open("{0}/{1}.csv".format(dest,tablename), "wb"))
         writer.writerows(cur)
+    os.remove(os.path.join(tmp,name))
 
 def disunity_extract(root, name, dest, tmp):
     print "[-] disunitying {0}.".format(name)
@@ -142,6 +145,7 @@ def disunity_extract(root, name, dest, tmp):
                 ahff2png_comm = "{0} {1}".format(AHFF2PNG, os.path.join(rootdir, destname))
                 os.system(ahff2png_comm)
                 os.remove(os.path.join(rootdir, destname))
+    os.remove(os.path.join(tmp,name))
 
 def main(*args):
     get_manifests()
