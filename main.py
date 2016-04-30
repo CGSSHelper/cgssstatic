@@ -4,6 +4,7 @@ import sys
 import os
 import hashlib
 import requests
+import sqlite3
 
 VERSION=os.getenv('VERSION') or 10014950
 
@@ -14,11 +15,16 @@ SQLBASEURL="http://storage.game.starlight-stage.jp/dl/resources/Generic"
 
 SCRIPT_PATH=os.getcwd()+"/exec"
 LZ4ER="{0}/lz4er".format(SCRIPT_PATH)
+UNACB="{0}/acb.py".format(SCRIPT_PATH)
+HCA="{0}/hca.exe".format(SCRIPT_PATH)
+DISUNITY="{0}/disunity.jar".format(SCRIPT_PATH)
 
 TMP_COMPRESSED=os.getcwd()+"/orimain"
 TMP_SQLITE3=os.getcwd()+"/main.db"
 
 TMP_DOWNLOAD=os.getcwd()+"/origin"
+TMP_DEST=os.getcwd()+"/tmpdest"
+DEST=os.getcwd()+"/dest"
 
 def get_manifests():
     if not os.path.isfile(TMP_SQLITE3):
@@ -75,13 +81,67 @@ def download_new_files():
             if not check_file("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), MD5):
                 print "===> Downloading new version of file {0}.".format(FILENAME)
                 url = download_url(FILENAME, MD5)
-                file_content = requests.get(url).content
+                r = requests.get(url)
+                file_content = r.content
+                status_code = r.status_code
                 if(os.path.dirname(FILENAME)!='' and not os.path.isdir("{0}/{1}".format(TMP_DOWNLOAD, os.path.dirname(FILENAME)))):
                     os.mkdir("{0}/{1}".format(TMP_DOWNLOAD, os.path.dirname(FILENAME)))
-                with open("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), 'wb') as f:
-                    f.write(file_content)
+                if status_code == 200:
+                    with open("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), 'wb') as f:
+                        f.write(file_content)
+                else:
+                    print "===> Error {0}.".format(FILENAME)
             else:
                 print "===> Skipping {0}.".format(FILENAME)
+
+def extract():
+    for root, dirs, files in os.walk(TMP_DOWNLOAD):
+        for name in files:
+            ext = name.split('.')[1]
+            if ext == "acb":
+                acb_extract(root,name,DEST+"/sound",TMP_DEST)
+            elif ext == "mdb":
+                sql_extract(root,name,DEST+"/master",TMP_DEST)
+            elif ext == "unity3d":
+                disunity_extract(root,name,DEST+"/"+name.split('_')[0],TMP_DEST)
+            else:
+                print "[!] cannot ripper {0}".format(os.path.join(root,name))
+
+def acb_extract(root, name, dest, tmp):
+    print "[-] unacb {0}".format(name)
+    acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), dest)
+    os.system(acb_comm)
+    hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(dest,name.replace('acb','hca'))
+    os.system(hca_comm)
+    avconv_comm = "avconv -i {0} {1}".format(os.path.join(dest,name.replace('acb','wav'), os.path.join(dest,name.replace('acb','mp3'))
+    os.system(avconv_comm)
+
+def sql_extract(root, name, dest, tmp):
+    print "[-] unpacking sql {0}".format(name)
+    lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
+    os.system(lz4er_comm)
+    conn = sqlite3.connect(os.path.join(tmp,name)
+    cur = conn.cursor()
+    cur.execute("select name from sqlite_master where type='table' order by name")
+    for table in cur.fetchall():
+        tablename = table[0]
+        print "[>] $fullname to {0}.csv".format(tablename)
+        cur.execute("select * from ?", tablename)
+        writer = UnicodeWriter(open("{0}/{1}.csv".format(dest,tablename), "wb"))
+        writer.writerows(cur)
+
+def disunity_extract(root, name, dest, tmp):
+    print "[-] disunitying {0}.".format(name)
+    lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
+    os.system(lz4er_comm)
+    disunity_comm = "java -jar {0} extract -d {1} {2}".format(DISUNITY, dest+"/"+name.split('.')[0], os.path.join(tmp,name))
+    os.system(disunity_comm)
+    for rootdir, dirs, files in os.walk(dest+"/"+name.split('.')[0]):
+        for destname in files:
+            if destname.split('.')[1]=="ahff":
+                ahff2png_comm = "{0} {1}".format(AHFF2PNG, os.path.join(rootdir, destname))
+                os.system(ahff2png_comm)
+                os.remove(os.path.join(rootdir, destname))
 
 def main(*args):
     get_manifests()
