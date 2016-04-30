@@ -51,7 +51,7 @@ def download_url(filename, md5):
     ext = filename.split('.')[1]
     if ext == "unity3d":
         return "{0}/{1}".format(ASSETBBASEURL, md5)
-    elif ext == "mdb":
+    elif ext == "mdb" or ext == "bdb":
         return "{0}/{1}".format(SQLBASEURL, md5)
     elif ext == "acb":
         return "{0}/{1}/{2}".format(SOUNDBASEURL, os.path.dirname(filename), md5)
