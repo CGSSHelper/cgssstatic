@@ -5,7 +5,7 @@ import os
 import hashlib
 import requests
 import sqlite3
-import UnicodeWriter
+from UnicodeWriter import UnicodeWriter
 
 VERSION=os.getenv('VERSION') or 10014950
 
@@ -51,7 +51,7 @@ def download_url(filename, md5):
     ext = filename.split('.')[1]
     if ext == "unity3d":
         return "{0}/{1}".format(ASSETBBASEURL, md5)
-    elif ext == "mdb" or ext == "bdb":
+    elif ext == "mdb":
         return "{0}/{1}".format(SQLBASEURL, md5)
     elif ext == "acb":
         return "{0}/{1}/{2}".format(SOUNDBASEURL, os.path.dirname(filename), md5)
@@ -112,13 +112,14 @@ def extract():
 def acb_extract(root, name, dest, tmp):
     print "[-] unacb {0}".format(name)
     if not os.path.isdir(dest): os.mkdir(dest)
-    acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), tmp)
-    os.system(acb_comm)
-    hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(tmp,name.replace('acb','hca')))
-    os.system(hca_comm)
-    avconv_comm = "avconv -i {0} {1}".format(os.path.join(tmp,name.replace('acb','wav')), os.path.join(dest,name.replace('acb','mp3')))
-    os.system(avconv_comm)
-    os.remove(os.path.join(tmp,name.replace('acb','wav')))
+    if not os.path.isfile(os.path.join(dest,name.replace('acb','mp3'))):
+        acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), tmp)
+        os.system(acb_comm)
+        hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(tmp,name.replace('acb','hca')))
+        os.system(hca_comm)
+        avconv_comm = "avconv -i {0} {1}".format(os.path.join(tmp,name.replace('acb','wav')), os.path.join(dest,name.replace('acb','mp3')))
+        os.system(avconv_comm)
+        os.remove(os.path.join(tmp,name.replace('acb','wav')))
 
 def sql_extract(root, name, dest, tmp):
     print "[-] unpacking sql {0}".format(name)
@@ -130,8 +131,8 @@ def sql_extract(root, name, dest, tmp):
     cur.execute("select name from sqlite_master where type='table' order by name")
     for table in cur.fetchall():
         tablename = table[0]
-        print "[>] $fullname to {0}.csv".format(tablename)
-        cur.execute("select * from ?", tablename)
+        print "[>] {0} to {0}.csv".format(tablename)
+        cur.execute("select * from {0}".format(tablename))
         writer = UnicodeWriter(open("{0}/{1}.csv".format(dest,tablename), "wb"))
         writer.writerows(cur)
     os.remove(os.path.join(tmp,name))
@@ -139,18 +140,19 @@ def sql_extract(root, name, dest, tmp):
 def disunity_extract(root, name, dest, tmp):
     print "[-] disunitying {0}.".format(name)
     if not os.path.isdir(dest): os.mkdir(dest)
-    lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
-    os.system(lz4er_comm)
-    disunity_comm = "java -jar {0} extract -d {1} {2}".format(DISUNITY, dest+"/"+name.split('.')[0], os.path.join(tmp,name))
-    print disunity_comm
-    os.system(disunity_comm)
-    for rootdir, dirs, files in os.walk(dest+"/"+name.split('.')[0]):
-        for destname in files:
-            if destname.split('.')[1]=="ahff":
-                ahff2png_comm = "{0} {1}".format(AHFF2PNG, os.path.join(rootdir, destname))
-                os.system(ahff2png_comm)
-                os.remove(os.path.join(rootdir, destname))
-    os.remove(os.path.join(tmp,name))
+    if not os.path.isdir(dest+"/"+name.split('.')[0]):
+        lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
+        os.system(lz4er_comm)
+        disunity_comm = "java -jar {0} extract -d {1} {2}".format(DISUNITY, dest+"/"+name.split('.')[0], os.path.join(tmp,name))
+        #print disunity_comm
+        os.system(disunity_comm)
+        for rootdir, dirs, files in os.walk(dest+"/"+name.split('.')[0]):
+            for destname in files:
+                if destname.split('.')[1]=="ahff":
+                    ahff2png_comm = "{0} {1}".format(AHFF2PNG, os.path.join(rootdir, destname))
+                    os.system(ahff2png_comm)
+                    os.remove(os.path.join(rootdir, destname))
+        os.remove(os.path.join(tmp,name))
 
 def main(*args):
     #get_manifests()

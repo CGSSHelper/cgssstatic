@@ -10,6 +10,7 @@
 pyvenv.cfg
 .venv
 pip-selfcheck.json
+.pyc
 
 #tmp_files
 downloadlist
