@@ -86,10 +86,11 @@ def download_new_files():
                 r = requests.get(url)
                 file_content = r.content
                 status_code = r.status_code
-                if(os.path.dirname(FILENAME)!='' and not os.path.isdir("{0}/{1}".format(TMP_DOWNLOAD, os.path.dirname(FILENAME)))):
-                    os.mkdir("{0}/{1}".format(TMP_DOWNLOAD, os.path.dirname(FILENAME)))
+                down_dir = os.path.join(TMP_DOWNLOAD, os.path.dirname(FILENAME))
+                if os.path.dirname(FILENAME) != '' and not os.path.isdir(down_dir):
+                    os.mkdir(down_dir)
                 if status_code == 200:
-                    with open("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), 'wb') as f:
+                    with open(os.path.join(TMP_DOWNLOAD, destfile(FILENAME)), 'wb') as f:
                         f.write(file_content)
                 else:
                     print "===> Error {0}.".format(FILENAME)
@@ -155,8 +156,8 @@ def disunity_extract(root, name, dest, tmp):
         os.remove(os.path.join(tmp,name))
 
 def main(*args):
-    #get_manifests()
-    #download_new_files()
+    get_manifests()
+    download_new_files()
     extract()
 
 if __name__ == '__main__':
