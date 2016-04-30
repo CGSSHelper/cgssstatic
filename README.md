@@ -9,8 +9,8 @@ Only TESTED under `Debian 8 Jessie`, no gurantee under other Linux Platform.
 dpkg --add-architecture i386 && apt update
 echo "deb http://httpredir.debian.org/debian jessie-backports main" >> /etc/apt/sources.list
 apt update
-#libav-tools for wav to mp3 convert. python3 for acb.py. wine for hca.exe
-apt-get install libav-tools python3 python-pip wine
+#libav-tools for wav to mp3 convert, python3 for acb.py, wine for hca.exe, java for disunity.
+apt-get install libav-tools python3 python-pip wine default-jre
 pip install -r requirements.txt
 ```
 

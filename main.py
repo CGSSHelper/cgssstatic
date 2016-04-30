@@ -98,6 +98,8 @@ def download_new_files():
                 print "===> Skipping {0}.".format(FILENAME)
 
 def extract():
+    if not os.path.isdir(TMP_DEST): os.mkdir(TMP_DEST)
+    if not os.path.isdir(DEST): os.mkdir(DEST)
     for root, dirs, files in os.walk(TMP_DOWNLOAD):
         for name in files:
             ext = name.split('.')[1]
@@ -116,11 +118,14 @@ def acb_extract(root, name, dest, tmp):
     if not os.path.isfile(os.path.join(dest,name.replace('acb','mp3'))):
         acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), tmp)
         os.system(acb_comm)
-        hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(tmp,name.replace('acb','hca')))
+        # use basename because hca.exe cannot accept absolute path
+        hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(os.path.basename(tmp),name.replace('acb','hca')))
+        print hca_comm
         os.system(hca_comm)
-        avconv_comm = "avconv -i {0} {1}".format(os.path.join(tmp,name.replace('acb','wav')), os.path.join(dest,name.replace('acb','mp3')))
+        avconv_comm = "avconv -i {0} -qscale:a 0 {1}".format(os.path.join(tmp,name.replace('acb','wav')), os.path.join(dest,name.replace('acb','mp3')))
         os.system(avconv_comm)
         os.remove(os.path.join(tmp,name.replace('acb','wav')))
+        os.remove(os.path.join(tmp,name.replace('acb','hca')))
 
 def sql_extract(root, name, dest, tmp):
     print "[-] unpacking sql {0}".format(name)
