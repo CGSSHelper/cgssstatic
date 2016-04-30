@@ -19,6 +19,7 @@ LZ4ER="{0}/lz4er".format(SCRIPT_PATH)
 UNACB="{0}/acb.py".format(SCRIPT_PATH)
 HCA="{0}/hca.exe".format(SCRIPT_PATH)
 DISUNITY="{0}/disunity.jar".format(SCRIPT_PATH)
+AHFF2PNG="{0}/ahff2png".format(SCRIPT_PATH)
 
 TMP_COMPRESSED=os.getcwd()+"/orimain"
 TMP_SQLITE3=os.getcwd()+"/main.db"
@@ -110,19 +111,21 @@ def extract():
 
 def acb_extract(root, name, dest, tmp):
     print "[-] unacb {0}".format(name)
+    if not os.path.isdir(dest): os.mkdir(dest)
     acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), tmp)
     os.system(acb_comm)
-    hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(tmp,name.replace('acb','hca'))
+    hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(tmp,name.replace('acb','hca')))
     os.system(hca_comm)
     avconv_comm = "avconv -i {0} {1}".format(os.path.join(tmp,name.replace('acb','wav')), os.path.join(dest,name.replace('acb','mp3')))
     os.system(avconv_comm)
-    os.remove(os.path.join(tmp,name.replace('acb','wav'))
+    os.remove(os.path.join(tmp,name.replace('acb','wav')))
 
 def sql_extract(root, name, dest, tmp):
     print "[-] unpacking sql {0}".format(name)
+    if not os.path.isdir(dest): os.mkdir(dest)
     lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
     os.system(lz4er_comm)
-    conn = sqlite3.connect(os.path.join(tmp,name)
+    conn = sqlite3.connect(os.path.join(tmp,name))
     cur = conn.cursor()
     cur.execute("select name from sqlite_master where type='table' order by name")
     for table in cur.fetchall():
@@ -135,9 +138,11 @@ def sql_extract(root, name, dest, tmp):
 
 def disunity_extract(root, name, dest, tmp):
     print "[-] disunitying {0}.".format(name)
+    if not os.path.isdir(dest): os.mkdir(dest)
     lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
     os.system(lz4er_comm)
     disunity_comm = "java -jar {0} extract -d {1} {2}".format(DISUNITY, dest+"/"+name.split('.')[0], os.path.join(tmp,name))
+    print disunity_comm
     os.system(disunity_comm)
     for rootdir, dirs, files in os.walk(dest+"/"+name.split('.')[0]):
         for destname in files:
@@ -148,8 +153,9 @@ def disunity_extract(root, name, dest, tmp):
     os.remove(os.path.join(tmp,name))
 
 def main(*args):
-    get_manifests()
-    download_new_files()
+    #get_manifests()
+    #download_new_files()
+    extract()
 
 if __name__ == '__main__':
     main(*sys.argv)
