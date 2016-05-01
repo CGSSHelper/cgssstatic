@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-import re
-import sys
-import os
-import hashlib
-import requests
-import sqlite3
+import re, sys, os, hashlib, requests, sqlite3
 from UnicodeWriter import UnicodeWriter
 
 VERSION=os.getenv('VERSION') or 10014950
@@ -98,38 +93,42 @@ def download_new_files():
                 print "===> Skipping {0}.".format(FILENAME)
 
 def extract():
-    if not os.path.isdir(TMP_DEST): os.mkdir(TMP_DEST)
-    if not os.path.isdir(DEST): os.mkdir(DEST)
+    os.path.isdir(TMP_DEST) or os.mkdir(TMP_DEST)
+    os.path.isdir(DEST) or os.mkdir(DEST)
     for root, dirs, files in os.walk(TMP_DOWNLOAD):
         for name in files:
             ext = name.split('.')[1]
             if ext == "acb":
-                acb_extract(root,name,DEST+"/sound",TMP_DEST)
+                acb_extract(root,name,DEST+"/sound"+"/"+os.path.basename(root)+"/"+name.split('.')[0],TMP_DEST)
             elif ext == "mdb":
                 sql_extract(root,name,DEST+"/master",TMP_DEST)
-            elif ext == "unity3d":
-                disunity_extract(root,name,DEST+"/"+name.split('_')[0],TMP_DEST)
+            #elif ext == "unity3d":
+                #disunity_extract(root,name,DEST+"/"+name.split('_')[0],TMP_DEST)
             else:
                 print "[!] cannot ripper {0}".format(os.path.join(root,name))
 
 def acb_extract(root, name, dest, tmp):
     print "[-] unacb {0}".format(name)
-    if not os.path.isdir(dest): os.mkdir(dest)
-    if not os.path.isfile(os.path.join(dest,name.replace('acb','mp3'))):
+    if not os.path.isdir(dest):
+        os.makedirs(dest)
+    #if not os.path.isfile(os.path.join(dest,name.replace('acb','mp3'))):
         acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), tmp)
         os.system(acb_comm)
-        # use basename because hca.exe cannot accept absolute path
-        hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 {1}".format(HCA, os.path.join(os.path.basename(tmp),name.replace('acb','hca')))
-        print hca_comm
-        os.system(hca_comm)
-        avconv_comm = "avconv -i {0} -qscale:a 0 {1}".format(os.path.join(tmp,name.replace('acb','wav')), os.path.join(dest,name.replace('acb','mp3')))
-        os.system(avconv_comm)
-        os.remove(os.path.join(tmp,name.replace('acb','wav')))
-        os.remove(os.path.join(tmp,name.replace('acb','hca')))
+        for rootdir, dirs, files in os.walk(tmp):
+            for filename in files:
+                if filename.split('.')[1] == "hca":
+                    # use basename because hca.exe cannot accept absolute path
+                    hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 \"{1}\"".format(HCA, os.path.join(os.path.basename(tmp),filename))
+                    os.system(hca_comm) == 0
+                    if not os.path.isfile(os.path.join(tmp,filename.replace('hca','wav'))): continue
+                    avconv_comm = "avconv -i {0} -qscale:a 0 {1}".format(os.path.join(tmp,filename.replace('hca','wav')), os.path.join(dest,filename.replace('hca','mp3')))
+                    os.system(avconv_comm)
+                    os.remove(os.path.join(tmp,filename.replace('hca','wav')))
+                    os.remove(os.path.join(tmp,filename))
 
 def sql_extract(root, name, dest, tmp):
     print "[-] unpacking sql {0}".format(name)
-    if not os.path.isdir(dest): os.mkdir(dest)
+    os.path.isdir(dest) or os.mkdir(dest)
     lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
     os.system(lz4er_comm)
     conn = sqlite3.connect(os.path.join(tmp,name))
@@ -140,12 +139,13 @@ def sql_extract(root, name, dest, tmp):
         print "[>] {0} to {0}.csv".format(tablename)
         cur.execute("select * from {0}".format(tablename))
         writer = UnicodeWriter(open("{0}/{1}.csv".format(dest,tablename), "wb"))
+        writer.writerow([col[0] for col in cur.description])
         writer.writerows(cur)
     os.remove(os.path.join(tmp,name))
 
 def disunity_extract(root, name, dest, tmp):
     print "[-] disunitying {0}.".format(name)
-    if not os.path.isdir(dest): os.mkdir(dest)
+    os.path.isdir(dest) or os.mkdir(dest)
     if not os.path.isdir(dest+"/"+name.split('.')[0]):
         lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
         os.system(lz4er_comm)
@@ -161,8 +161,8 @@ def disunity_extract(root, name, dest, tmp):
         os.remove(os.path.join(tmp,name))
 
 def main(*args):
-    get_manifests()
-    download_new_files()
+    #get_manifests()
+    #download_new_files()
     extract()
 
 if __name__ == '__main__':
