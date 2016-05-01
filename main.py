@@ -102,8 +102,8 @@ def extract():
                 acb_extract(root,name,DEST+"/sound"+"/"+os.path.basename(root)+"/"+name.split('.')[0],TMP_DEST)
             elif ext == "mdb":
                 sql_extract(root,name,DEST+"/master",TMP_DEST)
-            #elif ext == "unity3d":
-                #disunity_extract(root,name,DEST+"/"+name.split('_')[0],TMP_DEST)
+            elif ext == "unity3d":
+                disunity_extract(root,name,DEST+"/"+name.split('_')[0],TMP_DEST)
             else:
                 print "[!] cannot ripper {0}".format(os.path.join(root,name))
 
@@ -111,7 +111,6 @@ def acb_extract(root, name, dest, tmp):
     print "[-] unacb {0}".format(name)
     if not os.path.isdir(dest):
         os.makedirs(dest)
-    #if not os.path.isfile(os.path.join(dest,name.replace('acb','mp3'))):
         acb_comm = "python3 {0} {1} {2}".format(UNACB, os.path.join(root,name), tmp)
         os.system(acb_comm)
         for rootdir, dirs, files in os.walk(tmp):
@@ -150,7 +149,6 @@ def disunity_extract(root, name, dest, tmp):
         lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
         os.system(lz4er_comm)
         disunity_comm = "java -jar {0} extract -d {1} {2}".format(DISUNITY, dest+"/"+name.split('.')[0], os.path.join(tmp,name))
-        #print disunity_comm
         os.system(disunity_comm)
         for rootdir, dirs, files in os.walk(dest+"/"+name.split('.')[0]):
             for destname in files:
@@ -161,8 +159,8 @@ def disunity_extract(root, name, dest, tmp):
         os.remove(os.path.join(tmp,name))
 
 def main(*args):
-    #get_manifests()
-    #download_new_files()
+    get_manifests()
+    download_new_files()
     extract()
 
 if __name__ == '__main__':
