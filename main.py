@@ -2,7 +2,7 @@
 import re, sys, os, hashlib, requests, sqlite3
 from UnicodeWriter import UnicodeWriter
 
-VERSION=os.getenv('VERSION') or 10014950
+VERSION=os.getenv('VERSION') or 10015250
 
 DBMANIFEST="http://storage.game.starlight-stage.jp/dl/{0}/manifests".format(VERSION)
 ASSETBBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/AssetBundles/Android"
