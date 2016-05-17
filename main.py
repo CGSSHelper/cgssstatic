@@ -17,7 +17,7 @@ DISUNITY="{0}/disunity.jar".format(SCRIPT_PATH)
 AHFF2PNG="{0}/ahff2png".format(SCRIPT_PATH)
 
 TMP_COMPRESSED=os.getcwd()+"/orimain"
-TMP_SQLITE3=os.getcwd()+"/main.db"
+TMP_SQLITE3=os.getcwd()+"/main_{0}.db".format(VERSION)
 
 TMP_DOWNLOAD=os.getcwd()+"/origin"
 TMP_DEST=os.getcwd()+"/tmpdest"
