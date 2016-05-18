@@ -17,18 +17,19 @@ DISUNITY="{0}/disunity.jar".format(SCRIPT_PATH)
 AHFF2PNG="{0}/ahff2png".format(SCRIPT_PATH)
 
 TMP_COMPRESSED=os.getcwd()+"/orimain"
-TMP_SQLITE3=os.getcwd()+"/main_{0}.db".format(VERSION)
+TMP_SQLITE3=os.getcwd()+"/main.db"
 
 TMP_DOWNLOAD=os.getcwd()+"/origin"
 TMP_DEST=os.getcwd()+"/tmpdest"
 DEST=os.getcwd()+"/dest"
 
 def get_manifests():
-    if not os.path.isfile(TMP_SQLITE3):
-        print "===> Figuring out where the main manifest is..."
-        res = requests.get(DBMANIFEST+"/all_dbmanifest").content.split()
-        regex = re.compile(".*Android,High,High")
-        FILENAME = [m.group(0) for l in res for m in [regex.search(l)] if m][0].split(',')[0]
+    print "===> Figuring out where the main manifest is..."
+    res = requests.get(DBMANIFEST+"/all_dbmanifest").content.split()
+    regex = re.compile(".*Android,High,High")
+    FILENAME = [m.group(0) for l in res for m in [regex.search(l)] if m][0].split(',')[0]
+    FILEMD5 = [m.group(0) for l in res for m in [regex.search(l)] if m][0].split(',')[1]
+    if not check_file(TMP_SQLITE3, FILEMD5):
         print "===> Downloading the main manifest."
         res = requests.get(DBMANIFEST+"/"+ FILENAME).content
         with open(TMP_COMPRESSED, 'wb') as f:
