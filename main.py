@@ -56,7 +56,7 @@ def check_version():
         return
 
     print("trace check_version")
-    print("current APP_VER: {0}".format(os.environ.get("CGSS_APP_VER")))
+    print("current APP_VER: {0}".format(VERSION))
     print("start check at {0}".format(time.asctime()))
 
     apiclient.versioncheck(check_version_api_recv)
