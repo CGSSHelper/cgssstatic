@@ -9,7 +9,11 @@ writer = UnicodeWriter(open("export.csv", "wb"))
 
 writer.writerows(c)
 """
-import csv, codecs, cStringIO
+try:
+    import csv, codecs, cStringIO
+except ImportError:
+    import csv, codecs
+    from io import StringIO
 
 class UnicodeWriter:
     """
