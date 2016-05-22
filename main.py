@@ -3,7 +3,14 @@ import re, sys, os, hashlib, requests, sqlite3, time
 import apiclient
 from UnicodeWriter import UnicodeWriter
 
-VERSION=os.getenv('CGSS_RES_VER').encode("ascii") or 10013600
+try:
+    open('res_ver', 'r')
+except:
+    with open('res_ver', 'w') as f:
+        f.write('10013600')
+
+with open('res_ver', 'r') as f:
+    VERSION=f.read().encode('ascii')
 
 ASSETBBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/AssetBundles/Android"
 SOUNDBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/Sound/Common"
@@ -27,9 +34,10 @@ def check_version_api_recv(response, msg):
     res_ver = msg.get(b"data_headers", {}).get(b"required_res_ver", b"-1").decode("utf8")
     if res_ver != VERSION:
         if res_ver != "-1":
-            print("New version {0} found".format(time.asctime()))
+            print("New version {0} found".format(res_ver))
             update_to_res_ver(res_ver)
-            os.environ['CGSS_RES_VER'] = res_ver
+            with open('res_ver', 'w') as f:
+                f.write(res_ver)
         else:
             print("no required_res_ver, did the app get a forced update?")
             exit(1)
