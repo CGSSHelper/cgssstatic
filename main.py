@@ -11,7 +11,7 @@ except:
 
 with open('res_ver', 'r') as f:
     global VERSION
-    VERSION = f.read().encode('ascii')
+    VERSION = f.read()
 
 ASSETBBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/AssetBundles/Android"
 SOUNDBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/Sound/Common"
@@ -39,6 +39,7 @@ def check_version_api_recv(response, msg):
             update_to_res_ver(res_ver)
             with open('res_ver', 'w') as f:
                 f.write(res_ver)
+            exit(0)
         else:
             print("no required_res_ver, did the app get a forced update?")
             exit(1)
@@ -204,7 +205,6 @@ def update_to_res_ver(res_ver):
     download_new_files()
     extract()
     print("{0} done update".format(time.asctime()))
-    exit(0)
 
 if __name__ == '__main__':
     check_version()
