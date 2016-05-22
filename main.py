@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-import re, sys, os, hashlib, requests, sqlite3, time
+import re, sys, os, hashlib, requests, sqlite3, time, csv
 import apiclient
-from UnicodeWriter import UnicodeWriter
 
 try:
     open('res_ver', 'r')
@@ -177,9 +176,10 @@ def sql_extract(root, name, dest, tmp):
         tablename = table[0]
         print("[>] {0} to {0}.csv".format(tablename))
         cur.execute("select * from {0}".format(tablename))
-        writer = UnicodeWriter(open("{0}/{1}.csv".format(dest,tablename), "wb"))
-        writer.writerow([col[0] for col in cur.description])
-        writer.writerows(cur)
+        with open("{0}/{1}.csv".format(dest,tablename), "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([s for s in [col[0] for col in cur.description]])
+            writer.writerows(cur)
     os.remove(os.path.join(tmp,name))
 
 def disunity_extract(root, name, dest, tmp):
