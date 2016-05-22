@@ -3,7 +3,7 @@ import re, sys, os, hashlib, requests, sqlite3, time
 import apiclient
 from UnicodeWriter import UnicodeWriter
 
-VERSION=os.getenv('CGSS_RES_VER') or 10013600
+VERSION=os.getenv('CGSS_RES_VER').encode("ascii") or 10013600
 
 ASSETBBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/AssetBundles/Android"
 SOUNDBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/Sound/Common"
