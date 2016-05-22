@@ -11,7 +11,7 @@ writer.writerows(c)
 """
 try:
     import csv, codecs, cStringIO
-except ImportError:
+except ImportError: #python3
     import csv, codecs
     from io import StringIO
 
@@ -23,7 +23,7 @@ class UnicodeWriter:
 
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
         # Redirect output to a queue
-        self.queue = cStringIO.StringIO()
+        self.queue = StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
