@@ -10,7 +10,8 @@ except:
         f.write('10013600')
 
 with open('res_ver', 'r') as f:
-    VERSION=f.read().encode('ascii')
+    global VERSION
+    VERSION = f.read().encode('ascii')
 
 ASSETBBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/AssetBundles/Android"
 SOUNDBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/Sound/Common"
