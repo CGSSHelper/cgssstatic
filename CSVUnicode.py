@@ -1,43 +1,37 @@
 import csv,codecs,io
 
-class UTF8Recoder:
-    def __init__(self, f, encoding):
-        self.reader = codecs.getreader(encoding)(f)
-    def __iter__(self):
-        return self
-    def __next__(self):
-        return self.reader.next().encode("utf-8")
-
-class UnicodeReader:
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        f = UTF8Recoder(f, encoding)
-        self.reader = csv.reader(f, dialect=dialect, **kwds)
-    def __next__(self):
-        '''next() -> unicode
-        This function reads and returns the next line as a Unicode string.
-        '''
-        row = next(self.reader)
-        return [str(s, "utf-8") for s in row]
-    def __iter__(self):
-        return self
-
 class UnicodeWriter:
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        self.queue = io.StringIO()
+        # Redirect output to a queue
+        self.queue = StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
-    def writerow(self, row):
-        '''writerow(unicode) -> None
-        This function takes a Unicode string and encodes it to the output.
-        '''
-        self.writer.writerow([s.encode("utf-8") for s in row])
-        data = self.queue.getvalue()
-        data = data.decode("utf-8")
-        data = self.encoder.encode(data)
-        self.stream.write(data)
-        self.queue.truncate(0)
+        self.encoding = encoding
 
+    def writerow(self, row):
+        if PY3:
+            self.writer.writerow([s for s in row])
+            # Fetch UTF-8 output from the queue ...
+            data = self.queue.getvalue()
+        else:
+            self.writer.writerow([s.encode(self.encoding) for s in row])
+            # Fetch UTF-8 output from the queue ...
+            data = self.queue.getvalue()
+            data = data.decode(self.encoding)
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+        self.queue.seek(0)
+        
     def writerows(self, rows):
         for row in rows:
             self.writerow(row)
