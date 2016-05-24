@@ -15,15 +15,9 @@ class UnicodeWriter:
         self.encoding = encoding
 
     def writerow(self, row):
-        if PY3:
-            self.writer.writerow([s for s in row])
-            # Fetch UTF-8 output from the queue ...
-            data = self.queue.getvalue()
-        else:
-            self.writer.writerow([s.encode(self.encoding) for s in row])
-            # Fetch UTF-8 output from the queue ...
-            data = self.queue.getvalue()
-            data = data.decode(self.encoding)
+        self.writer.writerow([s for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
         # ... and reencode it into the target encoding
         data = self.encoder.encode(data)
         # write to the target stream
