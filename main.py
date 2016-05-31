@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import re, sys, os, hashlib, requests, sqlite3, time
 import apiclient, CSVUnicode
 
@@ -19,7 +18,7 @@ SQLBASEURL="http://storage.game.starlight-stage.jp/dl/resources/Generic"
 SCRIPT_PATH=os.getcwd()+"/exec"
 LZ4ER="{0}/lz4er".format(SCRIPT_PATH)
 UNACB="{0}/acb.py".format(SCRIPT_PATH)
-HCA="{0}/hca.exe".format(SCRIPT_PATH)
+HCA="{0}/hca".format(SCRIPT_PATH)
 DISUNITY="{0}/disunity.jar".format(SCRIPT_PATH)
 AHFF2PNG="{0}/ahff2png".format(SCRIPT_PATH)
 
@@ -155,8 +154,8 @@ def acb_extract(root, name, dest, tmp):
         for rootdir, dirs, files in os.walk(tmp):
             for filename in files:
                 if filename.split('.')[1] == "hca":
-                    # use basename because hca.exe cannot accept absolute path
-                    hca_comm = "wine {0} -m 32 -a F27E3B22 -b 00003657 \"{1}\"".format(HCA, os.path.join(os.path.basename(tmp),filename))
+                    # use basename because hca cannot accept absolute path
+                    hca_comm = "{0} -m 32 \"{1}\"".format(HCA, os.path.join(os.path.basename(tmp),filename))
                     os.system(hca_comm) == 0
                     if not os.path.isfile(os.path.join(tmp,filename.replace('hca','wav'))): continue
                     avconv_comm = "avconv -i {0} -qscale:a 0 {1}".format(os.path.join(tmp,filename.replace('hca','wav')), os.path.join(dest,filename.replace('hca','mp3')))
