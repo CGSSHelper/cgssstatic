@@ -37,7 +37,6 @@ def check_version_api_recv(response, msg):
             update_to_res_ver(res_ver)
             with open('res_ver', 'w') as f:
                 f.write(res_ver)
-            exit(0)
         else:
             print("no required_res_ver, did the app get a forced update?")
             exit(1)
@@ -201,9 +200,42 @@ def update_to_res_ver(res_ver):
     global DBMANIFEST
     DBMANIFEST="http://storage.game.starlight-stage.jp/dl/{0}/manifests".format(res_ver)
     get_manifests()
+
+def update_all():
     download_new_files()
     extract()
     print("{0} done update".format(time.asctime()))
+    exit(0)
+    
+def update_master():
+    if not os.path.isdir(TMP_DOWNLOAD):
+        os.mkdir(TMP_DOWNLOAD)
+    with open("downloadlist", "r") as f:
+        for res in f.readlines():
+            res = res.split()[0].split(',')
+            FILENAME = res[0]
+            MD5 = res[1]
+            if(FILENAME=='master.mdb' and check_file("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), MD5)):
+                print("===> Downloading new version of file {0}.".format(FILENAME))
+                url = download_url(FILENAME, MD5)
+                r = requests.get(url)
+                file_content = r.content
+                status_code = r.status_code
+                down_dir = os.path.join(TMP_DOWNLOAD, os.path.dirname(FILENAME))
+                if os.path.dirname(FILENAME) != '' and not os.path.isdir(down_dir):
+                    os.mkdir(down_dir)
+                if status_code == 200:
+                    with open(os.path.join(TMP_DOWNLOAD, destfile(FILENAME)), 'wb') as f:
+                        f.write(file_content)
+                else:
+                    print("===> Error {0}.".format(FILENAME))
+    extract()
+    print("{0} done master update".format(time.asctime()))
 
 if __name__ == '__main__':
     check_version()
+    if sys.argv[1:]:
+        if('master' in sys.argv):
+            update_master()
+    else:
+        update_all()
