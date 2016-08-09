@@ -18,6 +18,7 @@
 
 import base64, msgpack, hashlib, random, time, os, uuid, requests
 import rijndael
+from asyncio import coroutine, Future
 
 # laziness
 def VIEWER_ID_KEY():
@@ -41,11 +42,11 @@ def encrypt_cbc(s, iv, key):
 
 class ApiClient(object):
     BASE = "http://game.starlight-stage.jp"
-    def __init__(self, user, viewer_id, udid, res_ver=os.getenv("CGSS_RES_VER", "10013600").encode('ascii')):
+    def __init__(self, user, viewer_id, udid, res_ver=os.getenv("CGSS_RES_VER", "10013600").encode('ascii'), sid=None):
         self.user = user
         self.viewer_id = viewer_id
         self.udid = udid
-        self.sid = None
+        self.sid = sid
         self.res_ver = res_ver
 
     def lolfuscate(self, s):
@@ -59,6 +60,7 @@ class ApiClient(object):
 
     def call(self, path, args, done):
         vid_iv = ("%032d" % random.randrange(10**32)).encode("ascii")
+        args["timezone"] = "09:00:00"
         args["viewer_id"] = vid_iv + base64.b64encode(
             encrypt_cbc(bytes(self.viewer_id, "ascii"),
                         vid_iv,
@@ -76,7 +78,7 @@ class ApiClient(object):
             "CARRIER": "google",
             "UDID": self.lolfuscate(self.udid),
             "APP_VER": os.environ.get("VC_APP_VER", "1.9.4"), # in case of sent
-            "RES_VER": str(self.res_ver),
+            "RES_VER": self.res_ver,
             "IP_ADDRESS": "127.0.0.1",
             "DEVICE_NAME": "Nexus 42",
             "X-Unity-Version": "5.1.2f1",
@@ -90,7 +92,15 @@ class ApiClient(object):
         }
 
         response = requests.post(self.BASE + path, headers=headers, data=body)
-        self.wrap_callback(done, response, msg_iv)
+        if(done):
+            self.wrap_callback(done, response, msg_iv)
+        else:
+            reply = base64.b64decode(response.text.encode('ascii'))
+            plain = decrypt_cbc(reply[:-32], msg_iv, reply[-32:]).split(b"\0")[0]
+            msg = msgpack.unpackb(base64.b64decode(plain), encoding='utf-8')
+            future = Future()
+            future.set_result((response, msg))
+            return future
 
     def wrap_callback(self, done, response, iv):
         if response.status_code != requests.codes.ok:
@@ -99,13 +109,13 @@ class ApiClient(object):
 
         reply = base64.b64decode(response.text.encode('ascii'))
         plain = decrypt_cbc(reply[:-32], iv, reply[-32:]).split(b"\0")[0]
-        msg = msgpack.unpackb(base64.b64decode(plain))
-        print(msg)
+        msg = msgpack.unpackb(base64.b64decode(plain), encoding='utf-8')
+        #print(msg)
         try:
             self.sid = msg["data_headers"]["sid"]
         except:
             pass
-        done(response, msg)
+        done(response, msg, self.sid)
 
 def versioncheck(callback):
     user_id, viewer_id, udid = os.getenv("VC_ACCOUNT", "::").split(":")
@@ -117,3 +127,17 @@ def versioncheck(callback):
         "app_type": 0,
     }
     client.call("/load/check", args, callback)
+    
+def getLoadIndex(callback, sid):
+    user_id, viewer_id, udid = os.getenv("VC_ACCOUNT", "::").split(":")
+    client = ApiClient(user_id, viewer_id, udid, sid=sid)
+    args = {
+        "live_state": 0, 
+        "friend_view_time": 1467500261, 
+        "live_setting": 0, 
+        "load_state": 0,
+        "name_card_view_time": 0, 
+        "live_detail_id": 0, 
+        "tutorial_flag": 1000
+    }
+    client.call("/load/index", args, callback)

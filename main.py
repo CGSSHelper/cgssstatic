@@ -29,7 +29,7 @@ TMP_DOWNLOAD=os.getcwd()+"/origin"
 TMP_DEST=os.getcwd()+"/tmpdest"
 DEST=os.getcwd()+"/dest"
 
-def check_version_api_recv(response, msg):
+def check_version_api_recv(response, msg, sid):
     res_ver = msg.get(b"data_headers", {}).get(b"required_res_ver", b"-1").decode("utf8")
     if res_ver != VERSION:
         if res_ver != "-1":
@@ -212,10 +212,9 @@ def update_master():
         os.mkdir(TMP_DOWNLOAD)
     with open("downloadlist", "r") as f:
         for res in f.readlines():
-            res = res.split()[0].split(',')
-            FILENAME = res[0]
-            MD5 = res[1]
-            if(FILENAME=='master.mdb' and check_file("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), MD5)):
+            FILENAME, MD5 = res.split()[0].split(',')
+            print(FILENAME, FILENAME=="master.mdb")
+            if(FILENAME=="master.mdb" and not check_file("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), MD5)):
                 print("===> Downloading new version of file {0}.".format(FILENAME))
                 url = download_url(FILENAME, MD5)
                 r = requests.get(url)
