@@ -17,7 +17,7 @@
 # limitations under the License.
 
 import base64, msgpack, hashlib, random, time, os, uuid, requests
-import rijndael
+from . import rijndael
 from asyncio import coroutine, Future
 
 # laziness
@@ -127,17 +127,17 @@ def versioncheck(callback):
         "app_type": 0,
     }
     client.call("/load/check", args, callback)
-    
+
 def getLoadIndex(callback, sid):
     user_id, viewer_id, udid = os.getenv("VC_ACCOUNT", "::").split(":")
     client = ApiClient(user_id, viewer_id, udid, sid=sid)
     args = {
-        "live_state": 0, 
-        "friend_view_time": 1467500261, 
-        "live_setting": 0, 
+        "live_state": 0,
+        "friend_view_time": 1467500261,
+        "live_setting": 0,
         "load_state": 0,
-        "name_card_view_time": 0, 
-        "live_detail_id": 0, 
+        "name_card_view_time": 0,
+        "live_detail_id": 0,
         "tutorial_flag": 1000
     }
     client.call("/load/index", args, callback)
