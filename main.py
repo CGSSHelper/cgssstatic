@@ -30,15 +30,16 @@ TMP_DEST=os.getcwd()+"/tmpdest"
 DEST=os.getcwd()+"/dest"
 
 def check_version_api_recv(response, msg, sid):
-    res_ver = msg.get(b"data_headers", {}).get(b"required_res_ver", b"-1").decode("utf8")
+    res_ver = msg.get("data_headers", {}).get("required_res_ver", "-1")
     if res_ver != VERSION:
         if res_ver != "-1":
             print("New version {0} found".format(res_ver))
-            update_to_res_ver(res_ver)
+            #update_to_res_ver(res_ver)
             with open('res_ver', 'w') as f:
                 f.write(res_ver)
         else:
             print("no required_res_ver, did the app get a forced update?")
+            print(msg)
             exit(1)
     else:
         print("we're on latest")
