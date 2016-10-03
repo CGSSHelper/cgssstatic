@@ -16,7 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64, msgpack, hashlib, random, time, os, uuid, requests
+import base64, msgpack, hashlib, random, time, os, uuid, requests, sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 from rijndael import rijndael
 from asyncio import coroutine, Future
 
