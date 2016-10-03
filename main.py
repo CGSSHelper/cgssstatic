@@ -15,19 +15,19 @@ ASSETBBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/AssetBun
 SOUNDBASEURL="http://storage.game.starlight-stage.jp/dl/resources/High/Sound/Common"
 SQLBASEURL="http://storage.game.starlight-stage.jp/dl/resources/Generic"
 
-SCRIPT_PATH=os.getcwd()+"/exec"
+SCRIPT_PATH=os.path.dirname(os.path.realpath(__file__))+"/exec"
 LZ4ER="{0}/lz4er".format(SCRIPT_PATH)
 UNACB="{0}/acb.py".format(SCRIPT_PATH)
 HCA="{0}/hca".format(SCRIPT_PATH)
 DISUNITY="{0}/disunity.jar".format(SCRIPT_PATH)
 AHFF2PNG="{0}/ahff2png".format(SCRIPT_PATH)
 
-TMP_COMPRESSED=os.getcwd()+"/orimain"
-TMP_SQLITE3=os.getcwd()+"/main.db"
+TMP_COMPRESSED=os.path.dirname(os.path.realpath(__file__))+"/orimain"
+TMP_SQLITE3=os.path.dirname(os.path.realpath(__file__))+"/main.db"
 
-TMP_DOWNLOAD=os.getcwd()+"/origin"
-TMP_DEST=os.getcwd()+"/tmpdest"
-DEST=os.getcwd()+"/dest"
+TMP_DOWNLOAD=os.path.dirname(os.path.realpath(__file__))+"/origin"
+TMP_DEST=os.path.dirname(os.path.realpath(__file__))+"/tmpdest"
+DEST=os.path.dirname(os.path.realpath(__file__))+"/dest"
 
 def check_version_api_recv(response, msg, sid):
     res_ver = msg.get("data_headers", {}).get("required_res_ver", "-1")
