@@ -34,7 +34,7 @@ def check_version_api_recv(response, msg, sid):
     if res_ver != VERSION:
         if res_ver != "-1":
             print("New version {0} found".format(res_ver))
-            #update_to_res_ver(res_ver)
+            update_to_res_ver(res_ver)
             with open('res_ver', 'w') as f:
                 f.write(res_ver)
         else:
