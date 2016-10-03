@@ -1,13 +1,15 @@
 import re, sys, os, hashlib, requests, sqlite3, time
 import apiclient, CSVUnicode
 
+RES_VER_PATH = os.path.dirname(os.path.realpath(__file__))+'/res_ver'
+
 try:
-    open('res_ver', 'r')
+    open(RES_VER_PATH, 'r')
 except:
-    with open('res_ver', 'w') as f:
+    with open(RES_VER_PATH, 'w') as f:
         f.write('10013600')
 
-with open('res_ver', 'r') as f:
+with open(RES_VER_PATH, 'r') as f:
     global VERSION
     VERSION = f.read()
 
@@ -35,7 +37,7 @@ def check_version_api_recv(response, msg, sid):
         if res_ver != "-1":
             print("New version {0} found".format(res_ver))
             update_to_res_ver(res_ver)
-            with open('res_ver', 'w') as f:
+            with open(RES_VER_PATH, 'w') as f:
                 f.write(res_ver)
         else:
             print("no required_res_ver, did the app get a forced update?")
@@ -108,7 +110,7 @@ def check_file(filename, md5):
 def download_new_files():
     if not os.path.isdir(TMP_DOWNLOAD):
         os.mkdir(TMP_DOWNLOAD)
-    with open("downloadlist", "r") as f:
+    with open(os.path.dirname(os.path.realpath(__file__))+"/downloadlist", "r") as f:
         for res in f.readlines():
             res = res.split()[0].split(',')
             FILENAME = res[0]
@@ -211,7 +213,7 @@ def update_all():
 def update_master():
     if not os.path.isdir(TMP_DOWNLOAD):
         os.mkdir(TMP_DOWNLOAD)
-    with open("downloadlist", "r") as f:
+    with open(os.path.dirname(os.path.realpath(__file__))+"/downloadlist", "r") as f:
         for res in f.readlines():
             FILENAME, MD5 = res.split()[0].split(',')
             print(FILENAME, FILENAME=="master.mdb")
