@@ -17,7 +17,7 @@
 # limitations under the License.
 
 import base64, msgpack, hashlib, random, time, os, uuid, requests
-import rijndael
+from rijndael import rijndael
 from asyncio import coroutine, Future
 
 # laziness

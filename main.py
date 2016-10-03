@@ -157,7 +157,7 @@ def acb_extract(root, name, dest, tmp):
             for filename in files:
                 if filename.split('.')[1] == "hca":
                     # use basename because hca cannot accept absolute path
-                    hca_comm = "{0} -m 32 \"{1}\"".format(HCA, os.path.join(os.path.basename(tmp),filename))
+                    hca_comm = "{0} -m 32 \"{1}\"".format(HCA, os.path.join(tmp,filename))
                     os.system(hca_comm) == 0
                     if not os.path.isfile(os.path.join(tmp,filename.replace('hca','wav'))): continue
                     avconv_comm = "avconv -i {0} -qscale:a 0 {1}".format(os.path.join(tmp,filename.replace('hca','wav')), os.path.join(dest,filename.replace('hca','mp3')))
