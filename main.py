@@ -159,8 +159,11 @@ def acb_extract(root, name, dest, tmp):
                 if filename.split('.')[1] == "hca":
                     # use basename because hca cannot accept absolute path
                     hca_comm = "{0} -m 32 \"{1}\"".format(HCA, os.path.join(tmp,filename))
-                    os.system(hca_comm) == 0
-                    if not os.path.isfile(os.path.join(tmp,filename.replace('hca','wav'))): continue
+                    os.system(hca_comm)
+                    if not os.path.isfile(os.path.join(tmp,filename.replace('hca','wav'))):
+                        # clean up even fails
+                        os.remove(os.path.join(tmp,filename.replace('hca','wav')))
+                        continue
                     avconv_comm = "avconv -i {0} -qscale:a 0 {1}".format(os.path.join(tmp,filename.replace('hca','wav')), os.path.join(dest,filename.replace('hca','mp3')))
                     os.system(avconv_comm)
                     os.remove(os.path.join(tmp,filename.replace('hca','wav')))
