@@ -26,6 +26,7 @@ AHFF2PNG="{0}/ahff2png".format(SCRIPT_PATH)
 
 TMP_COMPRESSED=os.path.dirname(os.path.realpath(__file__))+"/orimain"
 TMP_SQLITE3=os.path.dirname(os.path.realpath(__file__))+"/main.db"
+DOWNLOAD_LIST=os.path.dirname(os.path.realpath(__file__))+"/downloadlist"
 
 TMP_DOWNLOAD=os.path.dirname(os.path.realpath(__file__))+"/origin"
 TMP_DEST=os.path.dirname(os.path.realpath(__file__))+"/tmpdest"
@@ -79,7 +80,7 @@ def get_manifests():
     else:
         print("===> Using cached manifest from earlier.")
 
-    sqlite_comm = "{0} {1} --separator \",\" \"SELECT name, hash FROM manifests\" > downloadlist".format("sqlite3", TMP_SQLITE3)
+    sqlite_comm = "{0} {1} --separator \",\" \"SELECT name, hash FROM manifests\" > {2}".format("sqlite3", TMP_SQLITE3, DOWNLOAD_LIST)
     os.system(sqlite_comm)
 
 def download_url(filename, md5):
@@ -110,7 +111,7 @@ def check_file(filename, md5):
 def download_new_files():
     if not os.path.isdir(TMP_DOWNLOAD):
         os.mkdir(TMP_DOWNLOAD)
-    with open(os.path.dirname(os.path.realpath(__file__))+"/downloadlist", "r") as f:
+    with open(DOWNLOAD_LIST, "r") as f:
         for res in f.readlines():
             res = res.split()[0].split(',')
             FILENAME = res[0]
@@ -213,7 +214,7 @@ def update_all():
 def update_master():
     if not os.path.isdir(TMP_DOWNLOAD):
         os.mkdir(TMP_DOWNLOAD)
-    with open(os.path.dirname(os.path.realpath(__file__))+"/downloadlist", "r") as f:
+    with open(DOWNLOAD_LIST, "r") as f:
         for res in f.readlines():
             FILENAME, MD5 = res.split()[0].split(',')
             print(FILENAME, FILENAME=="master.mdb")
