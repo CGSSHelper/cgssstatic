@@ -162,7 +162,7 @@ def acb_extract(root, name, dest, tmp):
                     os.system(hca_comm)
                     if not os.path.isfile(os.path.join(tmp,filename.replace('hca','wav'))):
                         # clean up even fails
-                        os.remove(os.path.join(tmp,filename.replace('hca','wav')))
+                        os.remove(os.path.join(tmp,filename))
                         continue
                     avconv_comm = "avconv -i {0} -qscale:a 0 {1}".format(os.path.join(tmp,filename.replace('hca','wav')), os.path.join(dest,filename.replace('hca','mp3')))
                     os.system(avconv_comm)
