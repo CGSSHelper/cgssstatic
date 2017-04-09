@@ -208,7 +208,7 @@ def bdb_extract(root, name, dest, tmp):
     for fileBlob in cur.fetchall():
         filename = fileBlob[0]
         print("[>] {0} to {0}".format(filename))
-        fileDir = os.path.dirname(dest) + os.path.dirname(filename)
+        fileDir = "{0}/{1}".format(os.path.dirname(dest), os.path.dirname(filename))
         os.path.isdir(fileDir) or os.mkdir(fileDir)
         filePath = "{0}/{1}".format(os.path.dirname(dest),filename)
         if os.path.isfile(filePath):
