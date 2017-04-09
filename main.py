@@ -132,6 +132,14 @@ def download_new_files():
                     print("===> Error {0}.".format(FILENAME))
             else:
                 print("===> Skipping {0}.".format(FILENAME))
+                
+def extract_master():
+    os.path.isdir(TMP_DEST) or os.mkdir(TMP_DEST)
+    os.path.isdir(DEST) or os.mkdir(DEST)
+    for root, dirs, files in os.walk(TMP_DOWNLOAD):
+        for name in files:
+            if name.split('.')[1] == "mdb":
+                sql_extract(root,name,DEST+"/master",TMP_DEST)
 
 def extract():
     os.path.isdir(TMP_DEST) or os.mkdir(TMP_DEST)
@@ -145,6 +153,8 @@ def extract():
                 sql_extract(root,name,DEST+"/master",TMP_DEST)
             elif ext == "unity3d":
                 disunity_extract(root,name,DEST+"/"+name.split('_')[0],TMP_DEST)
+            elif ext == "bdb":
+                bdb_extract(root,name,DEST+"/"+name.split('_')[0],TMP_DEST)
             else:
                 print("[!] cannot ripper {0}".format(os.path.join(root,name)))
 
@@ -185,6 +195,26 @@ def sql_extract(root, name, dest, tmp):
             writer = CSVUnicode.UnicodeWriter(f)
             writer.writerow([col[0] for col in cur.description])
             writer.writerows(cur)
+    os.remove(os.path.join(tmp,name))
+    
+def bdb_extract(root, name, dest, tmp):
+    print("[-] unpacking bdb {0}".format(name))
+    os.path.isdir(dest) or os.mkdir(dest)
+    lz4er_comm = "{0} {1} > {2}".format(LZ4ER, os.path.join(root,name), os.path.join(tmp,name))
+    os.system(lz4er_comm)
+    conn = sqlite3.connect(os.path.join(tmp,name))
+    cur = conn.cursor()
+    cur.execute("select * from blobs")
+    for fileBlob in cur.fetchall():
+        filename = fileBlob[0]
+        print("[>] {0} to {0}".format(filename))
+        fileDir = os.path.dirname(dest) + os.path.dirname(filename)
+        os.path.isdir(fileDir) or os.mkdir(fileDir)
+        filePath = "{0}/{1}".format(os.path.dirname(dest),filename)
+        if os.path.isfile(filePath):
+            continue
+        with open(filePath, "wb") as f:
+            f.write(fileBlob[1])
     os.remove(os.path.join(tmp,name))
 
 def disunity_extract(root, name, dest, tmp):
@@ -235,7 +265,7 @@ def update_master():
                         f.write(file_content)
                 else:
                     print("===> Error {0}.".format(FILENAME))
-    extract()
+    extract_master()
     print("{0} done master update".format(time.asctime()))
 
 if __name__ == '__main__':
