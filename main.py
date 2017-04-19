@@ -33,7 +33,18 @@ TMP_DEST=os.path.dirname(os.path.realpath(__file__))+"/tmpdest"
 DEST=os.path.dirname(os.path.realpath(__file__))+"/dest"
 
 def check_version_api_recv(response, msg, sid):
+    result_code = msg.get("data_headers", {}).get("result_code", "0")
     res_ver = msg.get("data_headers", {}).get("required_res_ver", "-1")
+    if result_code is 204:
+        # app version update
+        res = requests.get("https://play.google.com/store/apps/details?id=jp.co.bandainamcoent.BNEI0242").content
+        match_ver = re.findall(r'itemprop="softwareVersion"> (\d{1}\.\d{1}\.\d{1})  </div>', res.decode('utf8'), re.M)
+        if(len(match_ver)):
+            os.environ['VC_APP_VER'] = match_ver[0]
+            print("update app ver to {}".format(match_ver[0]))
+            check_version()
+        return
+        
     if res_ver != VERSION:
         if res_ver != "-1":
             print("New version {0} found".format(res_ver))
@@ -250,7 +261,7 @@ def update_master():
     with open(DOWNLOAD_LIST, "r") as f:
         for res in f.readlines():
             FILENAME, MD5 = res.split()[0].split(',')
-            print(FILENAME, FILENAME=="master.mdb")
+            # print(FILENAME, FILENAME=="master.mdb")
             if(FILENAME=="master.mdb" and not check_file("{0}/{1}".format(TMP_DOWNLOAD, destfile(FILENAME)), MD5)):
                 print("===> Downloading new version of file {0}.".format(FILENAME))
                 url = download_url(FILENAME, MD5)
